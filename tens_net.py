@@ -25,6 +25,9 @@ class Tensor:
     old_legs = list(range(self.n_legs()))
     old_dims = [self.dim_leg(l) for l in old_legs]
     conserved_legs = [l for l in old_legs if l not in legs]
+    if conserved_legs == []:
+      self.elements = np.ravel(self.elements)
+      return
     conserved_dims = [np.size(el, l) for l in conserved_legs]
 
     bundled = [

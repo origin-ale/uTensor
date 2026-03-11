@@ -94,15 +94,36 @@ class TestExplicit:
           ]
         )
       ),
+      pytest.param(tn.Tensor(
+          [[[1,2,3,4],[5,6,7,8]],
+           [[9,10,11,12],[13,14,15,16]],
+           [[17,18,19,20],[21,22,23,24]]
+          ]
+        ),
+        (2,0), 
+        tn.Tensor(
+          [[1,5], [9,13], [17,21], [2,6], [10,14], [18,22],
+           [3,7], [11,15], [19,23], [4,8], [12,16], [20,24]
+          ]
+        ),
+        marks = pytest.mark.skip
+      ),
     ]
 )
 class TestBundle:
-   def test_bundle(self, start_tensor, bundle_legs, bundled_tensor):
-      t = copy(start_tensor)
-      t.bundle_legs(*bundle_legs)
-      t == start_tensor
-      assert not t == start_tensor
-      assert t == bundled_tensor
+  def test_bundle(self, start_tensor, bundle_legs, bundled_tensor):
+    t = copy(start_tensor)
+    t.bundle_legs(*bundle_legs)
+    t == start_tensor
+    assert not t == start_tensor
+    assert t == bundled_tensor
+
+def test_flattened(threelegs):
+    t = copy(threelegs)
+    t.bundle_legs(0,1)
+    t.bundle_legs(0,1)
+    assert t == tn.Tensor(np.arange(24)+1)
+
 
         # tn.Tensor(
         #   [[1,5,9,13,17,21],
