@@ -1,4 +1,5 @@
 import numpy as np
+import itertools as it
 
 class Tensor:
   def __init__(self, ndarr: np.ndarray | list):
@@ -22,21 +23,7 @@ class Tensor:
   def bundle_legs(self, *legs):
     """Bundle a tuple of legs. The legs are bundled together at the lowest-numbered leg."""
     el = self.elements
-    old_legs = list(range(self.n_legs()))
-    old_dims = [self.dim_leg(l) for l in old_legs]
-    conserved_legs = [l for l in old_legs if l not in legs]
-    if conserved_legs == []:
-      self.elements = np.ravel(self.elements)
-      return
-    conserved_dims = [np.size(el, l) for l in conserved_legs]
-
-    bundled = [
-      [np.take(el, i, cl).flatten() for i in range(cd)]
-      for (cd,cl) in zip(conserved_dims, conserved_legs)
-    ]
-    if max(legs) > conserved_legs[0]:
-      stack_leg = conserved_legs[0]
-    else:
-      stack_leg = conserved_legs[0] - (len(legs)-1)
-
-    self.elements = np.stack(bundled[0], stack_leg)
+    bundled_leg = min(legs)
+    elm = np.moveaxis(el, legs, (0,1))
+    elmp = np.concat(np.unstack(elm, axis=0), axis=0)
+    self.elements = np.moveaxis(elmp, 0, bundled_leg)
