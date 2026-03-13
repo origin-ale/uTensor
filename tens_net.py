@@ -55,31 +55,32 @@ class Tensor:
     self.elements = np.moveaxis(elmp,
                                 tuple(range(leg_n)),
                                 tuple(range(leg, leg + leg_n)))
-    
+  
+def matrixize(op_o, leg):
+  op = copy(op_o)
+  uncontracted_legs = list(range(op.n_legs()))
+  uncontracted_legs.pop(leg)
+  op.move_leg(leg, -1)
+  uncontracted_dims = []
+  uncontracted_dims.append(op.dim_leg(0))
+  while op.n_legs() > 2:
+    uncontracted_dims.append(op.dim_leg(1))
+    op.bundle_legs(0,1)
+  
+  return op, uncontracted_dims
+  
+
 def contract(op1, op2, leg1, leg2):
   op = []
-  op.append(copy(op1))
-  op.append(copy(op2))
-  uncontracted_legs = tuple(
-    [list(range(op.n_legs())) for op in (op[0],op[1])]
-    )
-  for i, leg in ((0, leg1), (1, leg2)):
-    uncontracted_legs[i].pop(leg)
-    op[i].move_leg(leg, -1)
-
-  uncontracted_dims = ([],[])
-  for i in (0, 1):
-    print(f"Handling op[{i}]")
-    uncontracted_dims[i].append(op[i].dim_leg(0))
-    print(uncontracted_dims)
-    while op[i].n_legs() > 2:
-      print(f"Currently {op[i].n_legs()} legs")
-      uncontracted_dims[i].append(op[i].dim_leg(1))
-      # if op[i].n_legs() == 3: uncontracted_dims[i].append(op[i].dim_leg(0))
-      op[i].bundle_legs(0,1)
-      print(uncontracted_dims)
+  uncontracted_dims = []
+  for o,l in ((op1, leg1), (op2, leg2)):
+    temp_op, temp_ud = matrixize(o, l)
+    op.append(temp_op)
+    uncontracted_dims.append(temp_ud)
   result = Tensor(op[0].elements @ op[1].elements.T)
   for i in (1,0):
-    # uncontracted_dims[i].reverse()
     result.unbundle_leg(i, uncontracted_dims[i])
   return result
+
+def svd(op, bond_dim = None, absorb_sv = 'R' | 'L'):
+  pass
