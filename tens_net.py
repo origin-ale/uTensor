@@ -27,7 +27,8 @@ class Tensor:
     self.elements = np.moveaxis(self.elements, source, target)
          
   def bundle_legs(self, *legs):
-    """Bundle a tuple of legs. The legs are bundled together at the lowest-numbered leg."""
+    """Bundle a tuple of legs. 
+    Legs are bundled together at the lowest-numbered leg."""
     el = self.elements
     bundled_leg = min(legs)
     elm = np.moveaxis(el, legs, (0,1))
@@ -35,4 +36,21 @@ class Tensor:
     self.elements = np.moveaxis(elmp, 0, bundled_leg)
 
   def unbundle_leg(self, leg, leg_dims):
-    pass
+    """Unbundle one leg into multiple legs with dimensions specified via tuple.
+    Legs appear in the specified order starting at the current position."""
+    leg_n = len(leg_dims)
+    el = self.elements
+    elm = np.moveaxis(el, leg, 0)
+    split_tens = elm
+    split_dim = np.prod(leg_dims)
+    if split_dim != self.dim_leg(leg):
+      raise ValueError(f"Cannot unbundle leg of dimension {self.dim_leg(leg)} into legs of dimensions {leg_dims}.")
+    curr_leg = leg_n-1
+    while curr_leg > 0:
+      split_tens = np.stack(np.split(split_tens, split_dim/leg_dims[curr_leg], axis=0), axis = 0)
+      split_dim /= 2
+      curr_leg -= 1
+    elmp = split_tens
+    self.elements = np.moveaxis(elmp,
+                                tuple(range(leg_n)),
+                                tuple(range(leg, leg + leg_n)))
