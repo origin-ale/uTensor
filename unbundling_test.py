@@ -67,6 +67,11 @@ def test_three(threelegs, legs_to_bundle, legs_to_unbundle, legs_to_move):
       ()
     ),
     (
+      ((1, 2), (0, 1), (0,1)), 
+      ((0, (8, 2)), (0, (4, 2)), (0, (2,2))), 
+      ()
+    ),
+    (
       ((0, 2),), 
       ((0, (2,2)),), 
       ((1,2),)
