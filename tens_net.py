@@ -48,9 +48,11 @@ class Tensor:
       raise ValueError(f"Cannot unbundle leg of dimension {self.dim_leg(leg)} into legs of dimensions {leg_dims}.")
     curr_leg = leg_n-1
     while curr_leg > 0:
+      # print(f"{split_dim=}, {leg_dims=}, {curr_leg=}")
       split_tens = np.stack(np.split(split_tens, split_dim/leg_dims[curr_leg], axis=0), axis = 0)
-      split_dim /= 2
+      split_dim /= leg_dims[curr_leg]
       curr_leg -= 1
+    # print(16*'-')
     elmp = split_tens
     self.elements = np.moveaxis(elmp,
                                 tuple(range(leg_n)),
@@ -96,6 +98,8 @@ def matrixize(op_o, legs):
   
   return op, partition_dims
   
+def trace(op, leg1, leg2):
+  return Tensor(np.trace(op.elements, axis1=leg1, axis2=leg2))
 
 def contract(op1, op2, leg1, leg2):
   op = []
@@ -104,9 +108,11 @@ def contract(op1, op2, leg1, leg2):
     temp_op, (temp_ud, _) = matrixize(o, (l,))
     op.append(temp_op)
     uncontracted_dims.append(temp_ud)
+    # print(f"{uncontracted_dims=}")
   result = Tensor(op[0].elements @ op[1].elements.T)
   for i in (1,0):
     result.unbundle_leg(i, uncontracted_dims[i])
+  # print(16*'-')
   return result
 
 def svd(op, bond_dim = None, *, rhs_legnum = None, absorb_sv = 0):
