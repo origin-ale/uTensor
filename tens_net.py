@@ -56,25 +56,52 @@ class Tensor:
                                 tuple(range(leg_n)),
                                 tuple(range(leg, leg + leg_n)))
   
-def matrixize(op_o, leg):
+def matrixize(op_o, legs):
   op = copy(op_o)
-  uncontracted_legs = list(range(op.n_legs()))
-  uncontracted_legs.pop(leg)
-  op.move_leg(leg, -1)
-  uncontracted_dims = []
-  uncontracted_dims.append(op.dim_leg(0))
-  while op.n_legs() > 2:
-    uncontracted_dims.append(op.dim_leg(1))
+  leg_partition = []
+  leg_partition.append(list(range(op.n_legs())))
+  leg_partition.append([])
+  # print(f"Starting from {leg_partition}")
+  offset = 0
+  for leg in legs:
+    leg_partition[0].remove(leg)
+    leg_partition[1].append(leg)
+    op.move_leg(leg-offset, op.n_legs()-1)
+    # print(f"After moving original leg {leg} (ie. leg {leg-offset}): {leg_partition}")
+    # print(op.elements)
+    offset += 1
+
+  partition_dims = ([],[])
+
+  # print("Bundling lower legs...")
+  partition_dims[0].append(op.dim_leg(0))
+  # curr = 0
+  while op.n_legs() > len(legs)+1:
+    partition_dims[0].append(op.dim_leg(1))
     op.bundle_legs(0,1)
+    # print(f"Bundled original legs {curr} and {curr+1}")
+    # print(op.elements)
+    # curr += 1
+
+  # print("Bundling upper legs...")
+  partition_dims[1].append(op.dim_leg(-1))
+  # curr = op.n_legs()
+  while op.n_legs() > 2:
+    partition_dims[1].append(op.dim_leg(-2))
+    op.bundle_legs(op.n_legs()-2,op.n_legs()-1) # bundle_legs cannot handle negative indices
+    # print(f"Bundled original legs {curr-1} and {curr}")
+    # print(op.elements)
+    # curr -= 1
+  # print("Done")
   
-  return op, uncontracted_dims
+  return op, partition_dims
   
 
 def contract(op1, op2, leg1, leg2):
   op = []
   uncontracted_dims = []
   for o,l in ((op1, leg1), (op2, leg2)):
-    temp_op, temp_ud = matrixize(o, l)
+    temp_op, (temp_ud, _) = matrixize(o, (l,))
     op.append(temp_op)
     uncontracted_dims.append(temp_ud)
   result = Tensor(op[0].elements @ op[1].elements.T)
@@ -82,5 +109,5 @@ def contract(op1, op2, leg1, leg2):
     result.unbundle_leg(i, uncontracted_dims[i])
   return result
 
-def svd(op, bond_dim = None, absorb_sv = 'R' | 'L'):
+def svd(op, bond_dim = None, absorb_sv = 0):
   pass
