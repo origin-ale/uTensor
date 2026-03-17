@@ -21,17 +21,20 @@ def test_uniapply(fourlegs):
     assert res.dim_leg(l) == d
 
 def test_mpo_init(fourlegs):
-  mpo = mps.MpoNN()
+  mpo = mps.Mpo()
   uni = mps.Unitary(fourlegs)
-  mpo.append(uni)
+  auni = mps.AppliedUnitary(uni, (0,1))
+  mpo.append(auni)
   assert len(mpo) == 1
 
 def test_mpoapply(fourlegs):
   bond_dim = 10
   state = mps.Mps(N=8)
   uni = mps.Unitary(fourlegs)
-  mpo = mps.MpoNN()
-  for i in range(0,4): mpo.append(copy(uni))
+  mpo = mps.Mpo()
+  for i in range(0,4):
+    auni = mps.AppliedUnitary(copy(uni), (2*i, 2*i+1))
+    mpo.append(auni)
   new_state = mps.apply_mponn(mpo, state, bond_dim)
   assert new_state != state
   assert len(new_state) == 8

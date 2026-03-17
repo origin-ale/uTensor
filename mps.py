@@ -1,5 +1,6 @@
 import numpy as np
 import tens_net as tn
+import dataclasses
 
 class MpsElement(tn.Tensor):
   def __init__(self, ndarr: np.ndarray | list):
@@ -22,16 +23,21 @@ class Unitary(tn.Tensor):
 class Mps(list):
   def __init__(self, init_factors = None, N = None | int):
     if init_factors is not None:
-      list.__init__(self, init_factors)
+      super().__init__(init_factors)
     elif N is not None:
       list.__init__(self, [MpsElement([[[1,],[0,]]]) for i in range(0,N)])
     else: raise ValueError("At least one of init_factors and N must be provided")
-  
-class MpoNN(list):
+
+@dataclasses.dataclass
+class AppliedUnitary:
+  uni: Unitary
+  points: tuple
+
+class Mpo(list):
   def __setitem__(self, key, value):
-    try: assert type(value) == Unitary
-    except AssertionError: raise TypeError("Only Unitary instances can be factors of an MPO")
-    self.factors[key] = value
+    try: assert type(value) == AppliedUnitary
+    except AssertionError: raise TypeError("Only AppliedUnitary instances can be factors of an MPO")
+    super().__setitem__(key, value)
 
 def apply_unitary(U, s1, s2):
   c1 = tn.contract(U, s1, 0, 1)
@@ -41,10 +47,15 @@ def apply_unitary(U, s1, s2):
   c3.move_leg(3,0)
   return c3
 
-def apply_mponn(op: MpoNN, state: Mps, bonddim_ = 10):
+def apply_mponn(op: Mpo, state: Mps, bonddim_ = 10):
   new_factors = []
   for i in range(0, len(op)):
-    undecomposed = apply_unitary(op[i], state[2*i], state[2*i + 1])
+    # print(len(op), 'unis on', len(state), f'states / uni {i}:', op[i].points[0], '-', op[i].points[1])
+    undecomposed = apply_unitary(op[i].uni, state[op[i].points[0]], state[op[i].points[1]])
     svd_i = tn.svd(undecomposed, bond_dim = bonddim_, absorb_sv = 1)
     new_factors.extend(svd_i)
+  if len(state) - len(new_factors) == 2:
+    new_factors.insert(0, state[0])
+    new_factors.insert(-1, state[-1])
+  assert len(new_factors) == len(state)
   return Mps(new_factors)

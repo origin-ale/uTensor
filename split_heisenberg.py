@@ -40,12 +40,28 @@ def build_site_heisenH(N: int, i: int):
       hi[s,sp] = .5
   return hi
 
+def build_site_heisenH_unitary(delta: float):
+  mtx = np.array([
+    [.5,  0,    0,    0 ],
+    [0,   -.5,  .5,   0 ],
+    [0,   .5,   -.5,  0 ],
+    [0,   0,    0,    .5]
+  ])
+  mtx_exp = expm(1j * delta * mtx)
+  uni = tn.Tensor(mtx_exp)
+  uni.unbundle_leg(1, (2,2))
+  uni.unbundle_leg(0, (2,2))
+  return mps.Unitary(uni.elements)
+
 def build_mpos(N: int, delta: float):
-  mpo_even = mps.MpoNN()
-  mpo_odd = mps.MpoNN()
-  state_n = 2**N
-  for i in range(0, state_n, 2):
-    mpo_even[len(mpo_even):len(mpo_even)] = expm(1j * delta * build_site_heisenH(N, i))
-  for i in range(1, state_n, 2):
-    mpo_odd[len(mpo_odd):len(mpo_odd)] = expm(1j * delta * build_site_heisenH(N, i))
+  mpo_even = mps.Mpo()
+  mpo_odd = mps.Mpo()
+  for i in range(0, N, 2):
+    uni = build_site_heisenH_unitary(delta)
+    if i+1 < N:
+      mpo_even.append(mps.AppliedUnitary(uni, (i,i+1)))
+  for i in range(1, N, 2):
+    uni = build_site_heisenH_unitary(delta)
+    if i+1 < N:
+      mpo_odd.append(mps.AppliedUnitary(uni, (i,i+1)))
   return mpo_even, mpo_odd
