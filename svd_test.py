@@ -18,14 +18,16 @@ def test_conservation(threelegs, fourlegs):
   lhs2, rhs2 = tn.svd(t2)
 
   assert tn.contract(lhs1, rhs1, lhs1.n_legs()-1, 0).elements == pytest.approx(threelegs.elements)
-  assert tn.contract(lhs2, rhs2, lhs1.n_legs()-1, 0).elements == pytest.approx(fourlegs.elements)
+  temp = tn.contract(lhs2, rhs2, 2, 0)
+  temp.move_leg(3,0)
+  assert temp.elements == pytest.approx(fourlegs.elements)
 
 def test_nlegs(threelegs, fourlegs):
   t1 = threelegs
   t2 = fourlegs
   lhs1, rhs1 = tn.svd(t1)
   lhs2, rhs2 = tn.svd(t2)
-  lhs3, rhs3 = tn.svd(t2, rhs_legnum = 3)
+  lhs3, rhs3 = tn.svd(t2, rhs_legs = (1,2,3))
   assert lhs1.n_legs() == 3
   assert rhs1.n_legs() == 2
   assert lhs2.n_legs() == 3
