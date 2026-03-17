@@ -1,6 +1,7 @@
 import numpy as np
 import tens_net as tn
 import dataclasses
+from copy import copy
 
 class MpsElement(tn.Tensor):
   def __init__(self, ndarr: np.ndarray | list):
@@ -50,12 +51,11 @@ def apply_unitary(U, s1, s2):
 def apply_mponn(op: Mpo, state: Mps, bonddim_ = 10):
   new_factors = []
   for i in range(0, len(op)):
-    # print(len(op), 'unis on', len(state), f'states / uni {i}:', op[i].points[0], '-', op[i].points[1])
     undecomposed = apply_unitary(op[i].uni, state[op[i].points[0]], state[op[i].points[1]])
     svd_i = tn.svd(undecomposed, bond_dim = bonddim_, absorb_sv = 1)
-    new_factors.extend(svd_i)
+    new_factors.extend(copy(svd_i))
   if len(state) - len(new_factors) == 2:
-    new_factors.insert(0, state[0])
-    new_factors.insert(-1, state[-1])
+    new_factors.insert(0, copy(state[0]))
+    new_factors.append(copy(state[-1]))
   assert len(new_factors) == len(state)
   return Mps(new_factors)

@@ -38,6 +38,8 @@ def test_mpoapply(fourlegs):
   new_state = mps.apply_mponn(mpo, state, bond_dim)
   assert new_state != state
   assert len(new_state) == 8
+  assert new_state[0].dim_leg(0) == 1
+  assert new_state[7].dim_leg(2) == 1
   for t in range(0,len(new_state)):
     try: 
       assert new_state[t].dim_leg(1) == 2
