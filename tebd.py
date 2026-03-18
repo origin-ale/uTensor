@@ -8,7 +8,7 @@ import numpy as np
 N = 4
 delta = 1e-4
 n_steps = int(1/delta)
-bond_dim = 100
+bond_dim = 10
 
 np.set_printoptions(precision = 3, suppress=True)
 
@@ -31,8 +31,8 @@ evo_steps.set_description(f"Evolving system")
 for i in evo_steps:
   print_process = False
   if i in (1,5,10, n_steps-1): print_process = True
-  state = mps.apply_mponn(mpo_even, state, bonddim_= bond_dim)
-  state = mps.apply_mponn(mpo_odd, state, bonddim_= bond_dim)
+  state = mps.apply_mpo(mpo_even, state, bonddim_= bond_dim)
+  state = mps.apply_mpo(mpo_odd, state, bonddim_= bond_dim)
 
 final_mtx = state[0]
 contract_steps = range(1, N)

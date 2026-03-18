@@ -43,7 +43,7 @@ def test_mpoapply(fourlegs, N):
   for i in range(0,N//2):
     auni = mps.AppliedUnitary(copy(uni), (2*i, 2*i+1))
     mpo.append(auni)
-  new_state = mps.apply_mponn(mpo, state, bond_dim)
+  new_state = mps.apply_mpo(mpo, state, bond_dim)
   assert new_state != state
   assert len(new_state) == N
   assert new_state[0].dim_leg(0) == 1
@@ -61,6 +61,6 @@ def test_swap(swap):
   comp1 = mps.MpsElement([[[1],[0]]])
   state = mps.Mps(init_factors=[comp0, comp1])
   mpo = mps.Mpo([mps.AppliedUnitary(mps.Unitary(swap), (0,1))])
-  finstate = mps.apply_mponn(mpo, state)
+  finstate = mps.apply_mpo(mpo, state)
   assert finstate[0] == comp1
   assert finstate[1] == comp0
