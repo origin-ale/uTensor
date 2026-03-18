@@ -53,7 +53,7 @@ def build_site_heisenH_unitary(delta: float):
   uni.unbundle_leg(0, (2,2))
   return mps.Unitary(uni.elements)
 
-def build_mpos(N: int, delta: float):
+def build_tebd_mpos(N: int, delta: float):
   mpo_even = mps.Mpo()
   mpo_odd = mps.Mpo()
   for i in range(0, N, 2):

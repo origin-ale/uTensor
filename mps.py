@@ -48,7 +48,7 @@ def apply_unitary(U, s1, s2):
   c3.move_leg(3,0)
   return c3
 
-def apply_mponn(op: Mpo, state: Mps, bonddim_ = 10):
+def apply_mponn(op: Mpo, state: Mps, bonddim_ = None):
   new_factors = []
   for i in range(0, len(op)):
     undecomposed = apply_unitary(op[i].uni, state[op[i].points[0]], state[op[i].points[1]])
@@ -57,5 +57,10 @@ def apply_mponn(op: Mpo, state: Mps, bonddim_ = 10):
   if len(state) - len(new_factors) == 2:
     new_factors.insert(0, copy(state[0]))
     new_factors.append(copy(state[-1]))
+  elif len(state) - len(new_factors) == 1:
+    if op[0].points[0] == 0:
+      new_factors.append(copy(state[-1]))
+    elif op[0].points[0] == 1:
+      new_factors.insert(0, copy(state[0]))
   assert len(new_factors) == len(state)
   return Mps(new_factors)

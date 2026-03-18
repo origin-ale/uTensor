@@ -25,7 +25,7 @@ H = np.zeros((2**N, 2**N))
 for i in range(0,N):
   H += build_site_heisenH(N,i)
 
-U = expm(-1j * H)
+U = expm(- 1j * H)
 final_mtx = U @ initial_mtx.elements
 
 print("Final state:", final_mtx)

@@ -1,6 +1,6 @@
 import tens_net as tn
 import mps
-from split_heisenberg import build_mpos
+from split_heisenberg import build_tebd_mpos
 import tqdm
 from copy import copy
 import numpy as np
@@ -23,7 +23,7 @@ initial_mtx, partition_dims = tn.matrixize(copy(initial_mtx), (0,1,2,3,4))
 initial_mtx.bundle_legs(0,1)
 print("Initial state:", initial_mtx.elements)
 
-mpo_even, mpo_odd = build_mpos(N, delta)
+mpo_even, mpo_odd = build_tebd_mpos(N, delta)
 
 evo_steps = tqdm.trange(0,n_steps)
 evo_steps.set_description(f"Evolving system")

@@ -119,6 +119,11 @@ def svd(op, bond_dim = None, *, rhs_legs = None, absorb_sv = 0):
                              full_matrices=False, 
                              compute_uv = True)
   
+  zero_mask = (lmb == 0)
+  lmb = np.delete(lmb, zero_mask)
+  U = np.delete(U, zero_mask, -1)
+  Vh = np.delete(Vh, zero_mask, -2)
+
   if bond_dim is not None:
     lmb = lmb[0:bond_dim]
     U = U[:, 0:bond_dim]
