@@ -47,7 +47,7 @@ def build_site_heisenH_unitary(delta: float):
     [0,   .5,   -.5,  0 ],
     [0,   0,    0,    .5]
   ])
-  mtx_exp = expm(1j * delta * mtx)
+  mtx_exp = expm(- 1j * delta * mtx)
   uni = tn.Tensor(mtx_exp)
   uni.unbundle_leg(1, (2,2))
   uni.unbundle_leg(0, (2,2))
