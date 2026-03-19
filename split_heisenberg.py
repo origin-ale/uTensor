@@ -27,25 +27,26 @@ def build_site_heisenH(N: int, i: int):
     The site for which to build the hamiltonian
   """
   try: assert i < N
-  except AssertionError: raise ValueError("j must be < N")
+  except AssertionError: raise ValueError("i must be < N")
   state_n = 2**N
   hi = np.zeros((state_n, state_n))
   for s in range(0, state_n):
-    j = (i+1)%N # rightward nearest neighbor of i, with periodicity enforced
-    if get_bit(s,i) == get_bit(s,j): 
-      hi[s,s] += .25
-    else:
-      hi[s,s] += -.25
-      sp = flip_bits(s,i,j)
-      hi[s,sp] = .5
+    if i+1 < N:
+      j = i+1 # rightward nearest neighbor of i
+      if get_bit(s,i) == get_bit(s,j): 
+        hi[s,s] += .25
+      else:
+        hi[s,s] += -.25
+        sp = flip_bits(s,i,j)
+        hi[s,sp] = .5
   return hi
 
 def build_site_heisenH_unitary(delta: float):
   mtx = np.array([
-    [.5,  0,    0,    0 ],
-    [0,   -.5,  .5,   0 ],
-    [0,   .5,   -.5,  0 ],
-    [0,   0,    0,    .5]
+    [.25,  0,    0,    0 ],
+    [0,   -.25,  .5,   0 ],
+    [0,   .5,   -.25,  0 ],
+    [0,   0,    0,    .25]
   ])
   mtx_exp = expm(- 1j * delta * mtx)
   uni = tn.Tensor(mtx_exp)

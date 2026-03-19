@@ -7,12 +7,12 @@ import numpy as np
 
 from scipy.linalg import expm
 
-N = 3
-np.set_printoptions(precision = 3, suppress=True)
+N = 4
+np.set_printoptions(precision = 5, suppress=True)
 
 print(16*'=', "Running exact evolution", 16*'=')
-# factors = [mps.MpsElement(1/np.sqrt(2) * (np.array([[[1],[0]]]) + (-1)**i * np.array([[[0],[1]]]))) for i in range(0,N)]
-factors = [mps.MpsElement(np.array([[[1],[0]]])) for i in range(0,N)]
+factors = [mps.MpsElement(1/np.sqrt(2) * (np.array([[[1],[0]]]) + (-1)**i * np.array([[[0],[1]]]))) for i in range(0,N)]
+# factors = [mps.MpsElement(np.array([[[1],[0]]])) for i in range(0,N)]
 state = mps.Mps(init_factors=factors)
 initial_mtx = state[0]
 contract_steps = range(1, N)
@@ -30,5 +30,5 @@ for i in range(0,N):
 U = expm(- 1j * H)
 final_mtx = U @ initial_mtx.elements
 
-print("Final state:", final_mtx)
-print("with norm", np.linalg.norm(final_mtx))
+print("\nFinal state:", final_mtx)
+print("with norm", np.linalg.norm(final_mtx),'\n')
