@@ -28,6 +28,9 @@ class Tensor:
   
   def move_leg(self, source, target):
     self.elements = np.moveaxis(self.elements, source, target)
+  
+  def add_leg(self, pos):
+    self.elements = np.expand_dims(self.elements, axis = pos)
          
   def bundle_legs(self, leg1, leg2):
     """Bundle two legs. 
@@ -118,7 +121,6 @@ def svd(op, bond_dim = None, *, rhs_legs = None, absorb_sv = 0):
   U, lmb, Vh = np.linalg.svd(matrix.elements, 
                              full_matrices=False, 
                              compute_uv = True)
-  
   zero_mask = (lmb == 0)
   lmb = np.delete(lmb, zero_mask)
   U = np.delete(U, zero_mask, -1)

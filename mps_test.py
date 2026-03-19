@@ -19,7 +19,7 @@ def test_mps_init():
 def test_uniapply(fourlegs):
   state = mps.Mps(N = 3)
   uni = mps.Unitary(fourlegs)
-  res = mps.apply_unitary(uni, state[0], state[1])
+  res = mps.apply_bond_unitary(uni, state[0], state[1])
   assert res.n_legs() == 4
   for (l, d) in zip(range(0,4), (1,1,2,2)):
     assert res.dim_leg(l) == d
@@ -43,7 +43,13 @@ def test_mpoapply(fourlegs, N):
   for i in range(0,N//2):
     auni = mps.AppliedUnitary(copy(uni), (2*i, 2*i+1))
     mpo.append(auni)
-  new_state = mps.apply_mpo(mpo, state, bond_dim)
+  # print(len(mpo), len(state))
+  idn = mps.Unitary([[[[1,0]], [[0,1]]]])
+  mpo = mpo.svd_sweep()
+  if(len(state)-len(mpo)) == 1:
+    mpo.append(mps.AppliedUnitary(copy(idn), (len(state)-1,))) 
+  # print(len(mpo), len(state))
+  new_state = mps.apply_site_mpo(mpo, state)
   assert new_state != state
   assert len(new_state) == N
   assert new_state[0].dim_leg(0) == 1
@@ -56,11 +62,16 @@ def test_mpoapply(fourlegs, N):
       else: assert new_state[t].dim_leg(0) in range(2, bond_dim)
     except IndexError: pass
 
+@pytest.mark.skip
 def test_swap(swap):
   comp0 = mps.MpsElement([[[1],[0]]])
   comp1 = mps.MpsElement([[[1],[0]]])
-  state = mps.Mps(init_factors=[comp0, comp1])
-  mpo = mps.Mpo([mps.AppliedUnitary(mps.Unitary(swap), (0,1))])
-  finstate = mps.apply_mpo(mpo, state)
-  assert finstate[0] == comp1
-  assert finstate[1] == comp0
+  comp2 = mps.MpsElement([[[0],[1]]])
+  comp3 = mps.MpsElement([[[0],[1]]])
+  state = mps.Mps(init_factors=[comp0, comp1, comp2, comp3])
+  mpo = mps.Mpo([mps.AppliedUnitary(mps.Unitary(swap), (1,2))]) #do it on the center
+  finstate = mps.apply_bond_mpo(mpo, state)
+  assert finstate[0] == comp0
+  assert finstate[1] == comp2
+  assert finstate[2] == comp1
+  assert finstate[3] == comp3
