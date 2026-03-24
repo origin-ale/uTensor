@@ -94,7 +94,7 @@ def build_site_heisenH_unitary(delta: float):
   mtx_exp = mtx_exp.reshape(2,2,2,2)
   return mtx_exp
   
-N = 5
+N = 6
 delta = 1e-3
 n_steps = int(1/delta)
 bond_dim = 10
@@ -116,11 +116,11 @@ for i in range(1, N):
   new = new.reshape(new.shape[0], new.shape[1]*new.shape[2])
   vec = vec @ new
   vec = vec.reshape(*vec_dims[:-1], mps.gammas[i].shape[1], mps.gammas[i].shape[2])
-if N%2 == 1:
-  axperm = [(i+(N-1))%N + 1 for i in range(0,N)]
-  axperm.append(N+1)
-  axperm.insert(0,0)
-  vec = np.transpose(vec, axperm)
+# if N%2 == 1:
+#   axperm = [(i+(N-1))%N + 1 for i in range(0,N)]
+#   axperm.append(N+1)
+#   axperm.insert(0,0)
+#   vec = np.transpose(vec, axperm)
 print("Initial state:", vec.flatten())
 print("with norm", np.linalg.norm(vec))
 
@@ -146,7 +146,7 @@ for i in range(1, N):
   new = new.reshape(new.shape[0], new.shape[1]*new.shape[2])
   vec = vec @ new
   vec = vec.reshape(*vec_dims[:-1], mps.gammas[i].shape[1], mps.gammas[i].shape[2])
-if N%2 == 1:
-  vec = np.transpose(vec, axperm)
+# if N%2 == 1:
+#   vec = np.transpose(vec, axperm)
 print("\nFinal state:", vec.flatten())
 print("with norm", np.linalg.norm(vec))

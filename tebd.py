@@ -1,12 +1,15 @@
 import tens_net as tn
 import mps
-from split_heisenberg import build_tebd_mpos, build_site_heisenH
+from split_heisenberg import build_tebd_mpos
 import tqdm
 from copy import copy
 import numpy as np
-from scipy.linalg import expm
 
-N = 5
+# IMPORTANT WARNING: the meaning of physical indices is messed up, 
+# cyclic perm by 1 for odd site number
+# unknown for even site number
+
+N = 6
 delta = 1e-3
 n_steps = int(1/delta)
 bond_dim = 20
