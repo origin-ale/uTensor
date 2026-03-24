@@ -29,6 +29,49 @@ class Mps(list):
       list.__init__(self, [MpsElement([[[1,],[0,]]]) for i in range(0,N)])
     else: raise ValueError("At least one of init_factors and N must be provided")
 
+  def svd_sweep(self, dir, bond_dim = None):
+    new_factors = []
+    if dir == 1:
+      # print("--- Sweeping rightward ---")
+      # print("Currently", end=' ')
+      # print(*[t.dim_legs() for t in self],sep = '--')
+      new_factors.append(self[0])
+      for i in range(0,len(self)-1):
+        # print(f"Sites {i}-{i+1}")
+        # print(new_factors[i].dim_legs(), self[i+1].dim_legs())
+        c1 = tn.contract(new_factors[i], self[i+1], 2, 0)
+        l_tens, r_tens = tn.svd(c1, bond_dim, absorb_sv = 1, rhs_legs=(2,3))
+        # print(l_tens.dim_legs(), r_tens.dim_legs())
+        if new_factors: new_factors.pop()
+        new_factors.append(copy(l_tens))
+        new_factors.append(copy(r_tens))
+        # print("Currently", end=' ')
+        # print(*[t.dim_legs() for t in new_factors],sep = '--')
+    elif dir == 0:
+      # print("--- Sweeping leftward ---")
+      # print("Currently", end=' ')
+      # print(*[t.dim_legs() for t in self],sep = '--')
+      new_factors.append(self[-1])
+      # print("Currently", end=' ')
+      # print(*[t.dim_legs() for t in new_factors],sep = '--')
+      for i in range(len(self)-1, 0, -1):
+        # print(f"Sites {i-1}-{i}")
+        # print(self[i-1].dim_legs(), new_factors[0].dim_legs())
+        c1 = tn.contract(self[i-1], new_factors[0], 2, 0)
+        l_tens, r_tens = tn.svd(c1, bond_dim, absorb_sv = 0, rhs_legs = (2,3))
+        # print(l_tens.dim_legs(), r_tens.dim_legs())s
+        if new_factors: new_factors.pop(0)
+        new_factors.insert(0,copy(r_tens))
+        new_factors.insert(0,copy(l_tens))
+    #     print("Currently", end=' ')
+    #     print(*[t.dim_legs() for t in new_factors],sep = '--')
+
+    # print("After SVD", end=' ')
+    # print(*[t.dim_legs() for t in new_factors],sep = '--')
+    
+    res = Mps(init_factors = copy(new_factors))
+    return res
+
 @dataclasses.dataclass
 class AppliedUnitary:
   uni: Unitary
@@ -53,7 +96,7 @@ class Mpo(list):
       elif new_point > last_point+1: 
         for i in range(last_point, new_point): 
           new_factors.append(AppliedUnitary(idn, (i,)))
-          print(f"Put identity in position {i}")
+          # print(f"Put identity in position {i}")
 
       if len(t.points) == 1:
         new_factors.append(t)
@@ -83,14 +126,14 @@ def apply_bond_unitary(U, s1, s2):
 
 def apply_site_unitary(op: AppliedUnitary, state: Mps):
   mps_fac = state[op.points[0]]
-  print(f"{op.uni.dim_legs()} -- {mps_fac.dim_legs()}")
+  # print(f"{op.uni.dim_legs()} -- {mps_fac.dim_legs()}")
   c1 = tn.contract(op.uni, mps_fac, 1, 1)
-  print(f"Before bundling: {c1.dim_legs()}")
+  # print(f"Before bundling: {c1.dim_legs()}")
   c1.bundle_legs(0,4)
   c1.bundle_legs(1,3)
   c1.move_leg(1,2)
-  print(f"After bundling: {c1.dim_legs()}")
-  print("-----")
+  # print(f"After bundling: {c1.dim_legs()}")
+  # print("-----")
   return c1
 
 def apply_site_mpo(op: Mpo, state: Mps):
